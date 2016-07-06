@@ -1,0 +1,227 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Bastion Host with auto-scaling",
+
+  "Parameters": {
+    "Environment": {
+      "Type"                 : "String",
+      "Default"              : "dev",
+      "AllowedValues"        : [ "dev", "int", "prd" ]
+    },
+    "KeyName": {
+      "Description"          : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type"                 : "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+    "Vpc": {
+      "Description"          : "VPC Id to place the bastion host",
+      "Type"                 : "AWS::EC2::VPC::Id"
+    },
+    "publicSubnets": { 
+      "Description"          : "Public subnets to place the bastion host",
+      "Type"                 : "List<AWS::EC2::Subnet::Id>"
+    },
+    "SSHLocation" : {
+      "Description"          : "The IP address range that can SSH to the EC2 instance.",
+      "Type"                 : "String",
+      "MinLength"            : "9",
+      "MaxLength"            : "18",
+      "Default"              : "192.168.1.0/24",
+      "AllowedPattern"       : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+   }
+  },
+
+  "Mappings": {
+    "AWSRegionToAMI": {
+      "us-east-1"      : { "AMIID" : "ami-6869aa05" },
+      "us-west-2"      : { "AMIID" : "ami-7172b611" },
+      "us-west-1"      : { "AMIID" : "ami-31490d51" },
+      "eu-west-1"      : { "AMIID" : "ami-f9dd458a" },
+      "ap-southeast-1" : { "AMIID" : "ami-a59b49c6" },
+      "ap-northeast-1" : { "AMIID" : "ami-374db956" },
+      "ap-southeast-2" : { "AMIID" : "ami-dc361ebf" }
+    }
+  },
+
+  "Outputs": {
+    "sgSSH": {
+      "Description": "SSH Security group",
+      "Value"      : {"Ref": "sgSSH"}
+    }
+  },
+
+  "Resources": {
+
+    "sgSSH": {
+      "Type"      : "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId"           : { "Ref": "Vpc" },
+        "GroupDescription": "SSH from external",
+        "Tags"            : [ { "Key": "Name", "Value": "SSH Inbound" } ],
+        "SecurityGroupIngress": [ 
+          { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": { "Ref": "SSHLocation" } }
+        ]
+      }
+    },
+
+    "bastionEip": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain"    : "vpc"
+      }
+    },
+
+    "bastionRole":{
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+         "AssumeRolePolicyDocument": {
+            "Version" : "2012-10-17",
+            "Statement": [ {
+               "Effect": "Allow",
+               "Principal": {
+                  "Service": [ "ec2.amazonaws.com" ]
+               },
+               "Action": [ "sts:AssumeRole" ]
+            } ]
+         },
+         "Path": "/",
+         "Policies": [ {
+            "PolicyName": "bastionRole",
+            "PolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [ {
+                 "Effect": "Allow",
+                 "Action": [
+                   "ec2:Describe*",
+                   "ec2:AssociateAddress",
+                   "ec2:DescribeAddresses",
+                   "ec2:DisassociateAddress",
+                   "ec2:ModifyInstanceAttribute",
+                   "cloudwatch:ListMetrics",
+                   "cloudwatch:GetMetricStatistics",
+                   "cloudwatch:PutMetricData",
+                   "cloudwatch:Describe*",
+                   "autoscaling:Describe*"
+                 ],
+                 "Resource": "*"
+                 },
+                 {
+                 "Effect": "Allow",
+                 "Action": [
+                   "logs:CreateLogGroup",
+                   "logs:CreateLogStream",
+                   "logs:PutLogEvents",
+                   "logs:DescribeLogStreams"
+                 ],
+                 "Resource": [
+                   "arn:aws:logs:*:*:*"
+                 ]
+                 }
+            ] 
+         }} ]
+      }
+
+    },
+
+    "instanceProfile" : {
+      "Type" : "AWS::IAM::InstanceProfile",
+      "Properties" : {
+        "Path"  : "/",
+        "Roles" : [ {"Ref": "bastionRole"} ]
+      }
+    },
+
+    "bastionLaunchConfig": {
+      "Type"       : "AWS::AutoScaling::LaunchConfiguration",
+      "Properties" : {
+        "EbsOptimized"      : false,
+        "IamInstanceProfile": { "Ref": "instanceProfile" },
+        "ImageId"           : { "Fn::FindInMap" : [ "AWSRegionToAMI", { "Ref": "AWS::Region" }, "AMIID" ] },
+        "InstanceType"      : "t2.nano",
+        "KeyName"           : { "Ref": "KeyName" },
+        "SecurityGroups"    : [ { "Ref": "sgSSH" } ],
+        "UserData"          : { "Fn::Base64": {"Fn::Join": ["", [
+          "#!/bin/bash\n",
+          "yum -y update && yum -y install awscli awslogs aws-cfn-bootstrap\n",
+          "\n",
+          "aws --region ", {"Ref": "AWS::Region"}, " ec2 disassociate-address --association-id ", 
+          "`aws --output text --region ", {"Ref": "AWS::Region"}, " ec2 describe-addresses |grep ", {"Ref": "bastionEip"}, " |awk {'print $3'}`\n",
+          "\n",
+          "aws --region ", {"Ref": "AWS::Region"}, " ec2 associate-address --instance-id ",
+          "`curl http://169.254.169.254/latest/meta-data/instance-id` --allocation-id ", {"Fn::GetAtt": ["bastionEip", "AllocationId"]}, "\n",
+          "\n",
+          "cat <<'EOF'>> /etc/awslogs/awslogs.conf\n",
+          "[/var/log/secure]\n",
+          "datetime_format = %b %d %H:%M:%S\n",
+          "file = /var/log/secure\n",
+          "buffer_duration = 5000\n",
+          "log_stream_name = {instance_id}\n",
+          "initial_position = start_of_file\n",
+          "log_group_name = /var/log/secure\n",
+          "[/var/log/audit/audit.log]\n",
+          "datetime_format = %b %d %H:%M:%S\n",
+          "file = /var/log/audit/audit.log\n",
+          "buffer_duration = 5000\n",
+          "log_stream_name = {instance_id}\n",
+          "initial_position = start_of_file\n",
+          "log_group_name = /var/log/audit/audit.log\n",
+          "EOF\n",
+          "\n",
+          "chkconfig --add awslogs\n",
+          "chkconfig awslogs on\n",
+          "service awslogs restart\n",
+          "\n",
+          "yum -y install perl-Switch perl-DateTime perl-Sys-Syslog perl-LWP-Protocol-https\n",
+          "curl http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip -o /usr/local/bin/cloud.zip -O\n",
+          "unzip /usr/local/bin/cloud.zip\n",
+          "rm -f /usr/local/bin/cloud.zip\n",
+          "\n",
+          "cat <<'EOF'>> /var/spool/cron/root\n",
+          "*/5 * * * * /usr/local/bin/aws-scripts-mon/mon-put-instance-data.pl --disk-space-used --disk-space-avail --mem-used --mem-avail --swap-used --disk-path=/\n",
+          "\n",
+          "*/10 * * * * echo -e '127.0.0.1\tlocalhost localhost.localdomain' > /etc/hosts && /usr/bin/aws ec2 describe-instances --region ",
+          { "Ref": "AWS::Region" },
+          " --filters Name=instance-state-name,Values=running --query 'Reservations[].Instances[].[PrivateIpAddress,Tags[?Key==`Name`].Value[]]' --output text | sed '$!N;s/\n/\t/' |sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 >> /etc/hosts\n",
+          "\n",
+          "0 23 * * * yum -y update --security --exclude=kernel* > /dev/null 2>&1\n",
+          "EOF\n",
+          "\n",
+          "/opt/aws/bin/cfn-signal -e $? ",
+          "         --stack ", { "Ref": "AWS::StackName" },
+          "         --resource bastionAutoScalingGroup ",
+          "         --region ", { "Ref": "AWS::Region" }, "\n"
+
+        ]]}}
+      }
+    },
+
+    "bastionAutoScalingGroup": {
+      "Type"      : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "LaunchConfigurationName" : { "Ref": "bastionLaunchConfig" },
+        "MinSize"                 : "1",
+        "MaxSize"                 : "1",
+        "DesiredCapacity"         : "1",
+        "VPCZoneIdentifier"       : { "Ref": "publicSubnets" },
+        "Tags": [
+          { "Key": "env", "Value": { "Ref": "Environment" }, "PropagateAtLaunch": "true" },
+          { "Key": "role", "Value": "ssh-host", "PropagateAtLaunch": "true" },
+          { "Key": "Name", "Value": "bastion", "PropagateAtLaunch": "true" }
+        ]
+      },
+      "CreationPolicy": {
+        "ResourceSignal": { "Timeout": "PT15M" }
+      },
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MinInstancesInService": "1",
+          "MaxBatchSize"         : "1",
+          "PauseTime"            : "PT5M",
+          "WaitOnResourceSignals": "false"
+        }
+      }
+    }
+
+  }
+}
