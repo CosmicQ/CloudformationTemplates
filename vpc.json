@@ -61,7 +61,7 @@
   },
 
   "Outputs" : {
-    "MyVpcId" : { "Value": {"Ref": "MyVpcId"} },
+    "MyVpcId"        : { "Value": {"Ref": "MyVpcId"} },
     "SubnetPub1"     : { "Value": {"Ref": "SubnetPub1"} },
     "SubnetPub2"     : { "Value": {"Ref": "SubnetPub2"} },
     "SubnetPriv1"    : { "Value": {"Ref": "SubnetPriv1"} },
