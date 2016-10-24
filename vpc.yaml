@@ -1,0 +1,350 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A basic three-tier, multi-az VPC with NAT service for the private subnets
+Parameters:
+  VpcName:
+    Description: VPC Name
+    Type: String
+    Default: Development
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+    - dev
+    - int
+    - prd
+  MyCidr:
+    Description: CIDR Block for the VPC
+    Type: String
+    Default: 10.1.0.0/20
+  MyAz1:
+    Description: Availability Zone 1
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-west-2a
+  MyAz2:
+    Description: Availability Zone 2
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: us-west-2b
+  CidrSubPub1:
+    Description: Public Subnet 1
+    Type: String
+    Default: 10.1.0.0/24
+  CidrSubPub2:
+    Description: Public Subnet 2
+    Type: String
+    Default: 10.1.1.0/24
+  CidrSubPriv1:
+    Description: Private Subnet 1
+    Type: String
+    Default: 10.1.2.0/24
+  CidrSubPriv2:
+    Description: Private Subnet 2
+    Type: String
+    Default: 10.1.3.0/24
+  CidrSubDb1:
+    Description: Database Subnet 1
+    Type: String
+    Default: 10.1.4.0/24
+  CidrSubDb2:
+    Description: Database Subnet 2
+    Type: String
+    Default: 10.1.5.0/24
+Outputs:
+  MyVpcId:
+    Value:
+      Ref: MyVpcId
+    Export:
+      Name:
+        Fn::Join:
+        - ":"
+        - - Ref: AWS::StackName
+          - MyVpcId
+  SubnetPub1:
+    Value:
+      Ref: SubnetPub1
+    Export:
+      Name:
+        Fn::Join:
+        - ":"
+        - - Ref: AWS::StackName
+          - SubnetPub1
+  SubnetPub2:
+    Value:
+      Ref: SubnetPub2
+    Export:
+      Name:
+        Fn::Join:
+        - ":"
+        - - Ref: AWS::StackName
+          - SubnetPub2
+  SubnetPriv1:
+    Value:
+      Ref: SubnetPriv1
+    Export:
+      Name:
+        Fn::Join:
+        - ":"
+        - - Ref: AWS::StackName
+          - SubnetPriv1
+  SubnetPriv2:
+    Value:
+      Ref: SubnetPriv2
+    Export:
+      Name:
+        Fn::Join:
+        - ":"
+        - - Ref: AWS::StackName
+          - SubnetPriv2
+  SubnetDb1:
+    Value:
+      Ref: SubnetDb1
+    Export:
+      Name:
+        Fn::Join:
+        - ":"
+        - - Ref: AWS::StackName
+          - SubnetDb1
+  SubnetDb2:
+    Value:
+      Ref: SubnetDb2
+    Export:
+      Name:
+        Fn::Join:
+        - ":"
+        - - Ref: AWS::StackName
+          - SubnetDb2
+  NatGatewayId:
+    Value:
+      Ref: NatGatewayId
+    Export:
+      Name:
+        Fn::Join:
+        - ":"
+        - - Ref: AWS::StackName
+          - NatGatewayId
+Resources:
+  MyVpcId:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Ref: MyCidr
+      InstanceTenancy: default
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+      - Key: Name
+        Value:
+          Ref: VpcName
+      - Key: env
+        Value:
+          Ref: Environment
+  DhcpOptions:
+    Type: AWS::EC2::DHCPOptions
+    Properties:
+      DomainName:
+        Fn::Join:
+        - "."
+        - - Ref: AWS::Region
+          - compute.internal
+      DomainNameServers:
+      - AmazonProvidedDNS
+      Tags:
+      - Key: Name
+        Value: MyDHCP
+      - Key: env
+        Value:
+          Ref: Environment
+  dhcpAssociate:
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    Properties:
+      DhcpOptionsId:
+        Ref: DhcpOptions
+      VpcId:
+        Ref: MyVpcId
+  SubnetPub1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: MyVpcId
+      CidrBlock:
+        Ref: CidrSubPub1
+      AvailabilityZone:
+        Ref: MyAz1
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public1
+      - Key: env
+        Value:
+          Ref: Environment
+  SubnetPub2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: MyVpcId
+      CidrBlock:
+        Ref: CidrSubPub2
+      AvailabilityZone:
+        Ref: MyAz2
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: Public2
+      - Key: env
+        Value:
+          Ref: Environment
+  SubnetPriv1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: MyVpcId
+      CidrBlock:
+        Ref: CidrSubPriv1
+      AvailabilityZone:
+        Ref: MyAz1
+      Tags:
+      - Key: Name
+        Value: Private1
+      - Key: env
+        Value:
+          Ref: Environment
+  SubnetPriv2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: MyVpcId
+      CidrBlock:
+        Ref: CidrSubPriv2
+      AvailabilityZone:
+        Ref: MyAz2
+      Tags:
+      - Key: Name
+        Value: Private2
+      - Key: env
+        Value:
+          Ref: Environment
+  SubnetDb1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: MyVpcId
+      CidrBlock:
+        Ref: CidrSubDb1
+      AvailabilityZone:
+        Ref: MyAz1
+      Tags:
+      - Key: Name
+        Value: DB1
+      - Key: env
+        Value:
+          Ref: Environment
+  SubnetDb2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: MyVpcId
+      CidrBlock:
+        Ref: CidrSubDb2
+      AvailabilityZone:
+        Ref: MyAz2
+      Tags:
+      - Key: Name
+        Value: DB2
+      - Key: env
+        Value:
+          Ref: Environment
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: MyGateway
+      - Key: env
+        Value:
+          Ref: Environment
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: MyVpcId
+      InternetGatewayId:
+        Ref: InternetGateway
+  RtPublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: MyVpcId
+      Tags:
+      - Key: Name
+        Value: RT-Public
+      - Key: env
+        Value:
+          Ref: Environment
+  RoutePub:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: RtPublic
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+  SubnetRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: SubnetPub1
+      RouteTableId:
+        Ref: RtPublic
+  SubnetRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: SubnetPub2
+      RouteTableId:
+        Ref: RtPublic
+  RtPrivate:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: MyVpcId
+      Tags:
+      - Key: Name
+        Value: RT-Private
+      - Key: env
+        Value:
+          Ref: Environment
+  RtPriv:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: RtPrivate
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: NatGatewayId
+  SubnetRouteTableAssociation3:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: SubnetPriv1
+      RouteTableId:
+        Ref: RtPrivate
+  SubnetRouteTableAssociation4:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: SubnetPriv2
+      RouteTableId:
+        Ref: RtPrivate
+  NatEip:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  NatGatewayId:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId:
+        Fn::GetAtt:
+        - NatEip
+        - AllocationId
+      SubnetId:
+        Ref: SubnetPub1
