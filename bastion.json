@@ -55,7 +55,10 @@
       "Properties": {
         "VpcId"           : { "Ref": "Vpc" },
         "GroupDescription": "SSH from external",
-        "Tags"            : [ { "Key": "Name", "Value": "SSH Inbound" } ],
+        "Tags"            : [ 
+				{"Key": "Name", "Value": "SSH Inbound"},
+				{"Key": "Type", "Value": "Instance"}
+			    ],
         "SecurityGroupIngress": [ 
           { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": { "Ref": "SSHLocation" } }
         ]
@@ -69,63 +72,11 @@
       }
     },
 
-    "bastionRole":{
-      "Type": "AWS::IAM::Role",
-      "Properties": {
-         "AssumeRolePolicyDocument": {
-            "Version" : "2012-10-17",
-            "Statement": [ {
-               "Effect": "Allow",
-               "Principal": {
-                  "Service": [ "ec2.amazonaws.com" ]
-               },
-               "Action": [ "sts:AssumeRole" ]
-            } ]
-         },
-         "Path": "/",
-         "Policies": [ {
-            "PolicyName": "bastionRole",
-            "PolicyDocument": {
-               "Version" : "2012-10-17",
-               "Statement": [ {
-                 "Effect": "Allow",
-                 "Action": [
-                   "ec2:Describe*",
-                   "ec2:AssociateAddress",
-                   "ec2:DescribeAddresses",
-                   "ec2:DisassociateAddress",
-                   "ec2:ModifyInstanceAttribute",
-                   "cloudwatch:ListMetrics",
-                   "cloudwatch:GetMetricStatistics",
-                   "cloudwatch:PutMetricData",
-                   "cloudwatch:Describe*",
-                   "autoscaling:Describe*"
-                 ],
-                 "Resource": "*"
-                 },
-                 {
-                 "Effect": "Allow",
-                 "Action": [
-                   "logs:CreateLogGroup",
-                   "logs:CreateLogStream",
-                   "logs:PutLogEvents",
-                   "logs:DescribeLogStreams"
-                 ],
-                 "Resource": [
-                   "arn:aws:logs:*:*:*"
-                 ]
-                 }
-            ] 
-         }} ]
-      }
-
-    },
-
     "instanceProfile" : {
       "Type" : "AWS::IAM::InstanceProfile",
       "Properties" : {
         "Path"  : "/",
-        "Roles" : [ {"Ref": "bastionRole"} ]
+        "Roles" : "EC2BasicFunctionsRole"
       }
     },
 

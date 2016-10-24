@@ -61,14 +61,15 @@
   },
 
   "Outputs" : {
-    "MyVpcId"        : { "Value": {"Ref": "MyVpcId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcId" ] ] }} },
-    "SubnetPub1"     : { "Value": {"Ref": "SubnetPub1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub1" ] ] }} },
-    "SubnetPub2"     : { "Value": {"Ref": "SubnetPub2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub2" ] ] }} },
-    "SubnetPriv1"    : { "Value": {"Ref": "SubnetPriv1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv1" ] ] }} },
-    "SubnetPriv2"    : { "Value": {"Ref": "SubnetPriv2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv2" ] ] }} },
-    "SubnetDb1"      : { "Value": {"Ref": "SubnetDb1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb1" ] ] }} },
-    "SubnetDb2"      : { "Value": {"Ref": "SubnetDb2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb2" ] ] }} },
-    "NatGatewayId"   : { "Value": {"Ref": "NatGatewayId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "NatGatewayId" ] ] }} }
+    "MyVpcId"              : { "Value": {"Ref": "MyVpcId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcId" ] ] }} },
+    "SubnetPub1"           : { "Value": {"Ref": "SubnetPub1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub1" ] ] }} },
+    "SubnetPub2"           : { "Value": {"Ref": "SubnetPub2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub2" ] ] }} },
+    "SubnetPriv1"          : { "Value": {"Ref": "SubnetPriv1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv1" ] ] }} },
+    "SubnetPriv2"          : { "Value": {"Ref": "SubnetPriv2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv2" ] ] }} },
+    "SubnetDb1"            : { "Value": {"Ref": "SubnetDb1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb1" ] ] }} },
+    "SubnetDb2"            : { "Value": {"Ref": "SubnetDb2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb2" ] ] }} },
+    "NatGatewayId"         : { "Value": {"Ref": "NatGatewayId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "NatGatewayId" ] ] }} },
+    "EC2BasicFunctionsRole": { "Value": {"Ref": "EC2BasicFunctionsRole"}, "Export": {"Name": "EC2BasicFunctionsRole"} }
   },
 
   "Resources": {
@@ -268,7 +269,84 @@
         "AllocationId": { "Fn::GetAtt" : ["NatEip", "AllocationId"]},
         "SubnetId"    : {"Ref": "SubnetPub1"}
       }
+    },
+
+   "EC2BasicFunctionsRole":{
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+         "AssumeRolePolicyDocument": {
+            "Version" : "2012-10-17",
+            "Statement": [ {
+               "Effect": "Allow",
+               "Principal": {
+                  "Service": [ "ec2.amazonaws.com" ]
+               },
+               "Action": [ "sts:AssumeRole" ]
+            } ]
+         },
+         "Path": "/",
+         "Policies": [ {
+            "PolicyName": "EC2BasticFunctions",
+            "PolicyDocument": {
+               "Version" : "2012-10-17",
+               "Statement": [ {
+                 "Effect": "Allow",
+                 "Action": [
+			"autoscaling:CompleteLifecycleAction",
+			"autoscaling:Describe*",
+			"autoscaling:DeleteLifecycleHook",
+			"autoscaling:PutLifecycleHook",
+			"autoscaling:RecordLifecycleActionHeartbeat",
+			"codecommit:BatchGetRepositories",
+			"codecommit:Get*",
+			"codecommit:GitPull",
+			"codecommit:List*",
+			"ec2:Describe*",
+			"ec2:AssociateAddress",
+			"ec2:DescribeAddresses",
+			"ec2:DisassociateAddress",
+			"ec2:ModifyInstanceAttribute",
+			"ecs:StartTask",
+			"ecs:CreateCluster",
+			"ecs:DeregisterContainerInstance",
+			"ecs:DiscoverPollEndpoint",
+			"ecs:Poll",
+			"ecs:RegisterContainerInstance",
+			"ecs:StartTelemetrySession",
+			"ecs:Submit*",
+			"ecr:GetAuthorizationToken",
+			"ecr:BatchCheckLayerAvailability",
+			"ecr:GetDownloadUrlForLayer",
+			"ecr:BatchGetImage",
+			"cloudwatch:ListMetrics",
+			"cloudwatch:GetMetricStatistics",
+			"cloudwatch:PutMetricData",
+			"cloudwatch:Describe*",
+			"s3:Get*",
+			"s3:List*",
+			"sns:Publish",
+			"tag:GetTags",
+			"tag:GetResources"
+                 ],
+                 "Resource": "*"
+                 },
+                 {
+                 "Effect": "Allow",
+                 "Action": [
+                   "logs:CreateLogGroup",
+                   "logs:CreateLogStream",
+                   "logs:PutLogEvents",
+                   "logs:DescribeLogStreams"
+                 ],
+                 "Resource": [
+                   "arn:aws:logs:*:*:*"
+                 ]
+                 }
+            ]
+         }} ]
+      }
     }
+
 
   }
 }
