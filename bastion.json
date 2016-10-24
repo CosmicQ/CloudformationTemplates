@@ -45,15 +45,12 @@
   },
 
   "Outputs": {
-    "sgSSH": {
-      "Description": "SSH Security group",
-      "Value"      : {"Ref": "sgSSH"}
-    }
+    "BastionSSH": { "Value": {"Ref": "BastionSSH"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "BastionSSH" ] ] }} }
   },
 
   "Resources": {
 
-    "sgSSH": {
+    "BastionSSH": {
       "Type"      : "AWS::EC2::SecurityGroup",
       "Properties": {
         "VpcId"           : { "Ref": "Vpc" },
@@ -140,7 +137,7 @@
         "ImageId"           : { "Fn::FindInMap" : [ "AWSRegionToAMI", { "Ref": "AWS::Region" }, "AMIID" ] },
         "InstanceType"      : "t2.nano",
         "KeyName"           : { "Ref": "KeyName" },
-        "SecurityGroups"    : [ { "Ref": "sgSSH" } ],
+        "SecurityGroups"    : [ { "Ref": "BastionSSH" } ],
         "UserData"          : { "Fn::Base64": {"Fn::Join": ["", [
           "#!/bin/bash\n",
           "yum -y update && yum -y install awscli awslogs aws-cfn-bootstrap\n",
