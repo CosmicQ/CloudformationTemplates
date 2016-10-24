@@ -61,14 +61,14 @@
   },
 
   "Outputs" : {
-    "MyVpcId"        : { "Value": {"Ref": "MyVpcId"} },
-    "SubnetPub1"     : { "Value": {"Ref": "SubnetPub1"} },
-    "SubnetPub2"     : { "Value": {"Ref": "SubnetPub2"} },
-    "SubnetPriv1"    : { "Value": {"Ref": "SubnetPriv1"} },
-    "SubnetPriv2"    : { "Value": {"Ref": "SubnetPriv2"} },
-    "SubnetDb1"      : { "Value": {"Ref": "SubnetDb1"} },
-    "SubnetDb2"      : { "Value": {"Ref": "SubnetDb2"} },
-    "NatGatewayId"   : { "Value": {"Ref": "NatGatewayId"} }
+    "MyVpcId"        : { "Value": {"Ref": "MyVpcId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcId" ] ] }} },
+    "SubnetPub1"     : { "Value": {"Ref": "SubnetPub1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub1" ] ] }} },
+    "SubnetPub2"     : { "Value": {"Ref": "SubnetPub2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub2" ] ] }} },
+    "SubnetPriv1"    : { "Value": {"Ref": "SubnetPriv1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv1" ] ] }} },
+    "SubnetPriv2"    : { "Value": {"Ref": "SubnetPriv2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv2" ] ] }} },
+    "SubnetDb1"      : { "Value": {"Ref": "SubnetDb1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb1" ] ] }} },
+    "SubnetDb2"      : { "Value": {"Ref": "SubnetDb2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb2" ] ] }} },
+    "NatGatewayId"   : { "Value": {"Ref": "NatGatewayId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "NatGatewayId" ] ] }} }
   },
 
   "Resources": {
