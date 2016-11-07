@@ -360,7 +360,14 @@
             ]
          }} ]
       }
-    }
+    },
+    {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [ {"Ref": "EC2BasicFunctionsRole"} ]
+      }
+    }      
 
 
   }
