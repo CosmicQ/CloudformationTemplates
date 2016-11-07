@@ -17,15 +17,6 @@
       "Description"          : "VPC Stack Name",
       "Type"                 : "String"
     },
-    "SSHLocation" : {
-      "Description"          : "The IP address range that can SSH to the EC2 instance.",
-      "Type"                 : "String",
-      "MinLength"            : "9",
-      "MaxLength"            : "18",
-      "Default"              : "192.168.1.0/24",
-      "AllowedPattern"       : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
-      "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
-    },
     "AMIID": {
       "Description"          : "AMI ID to use for the instance",
       "Type"                 : "String"
@@ -33,26 +24,10 @@
   },
 
   "Outputs": {
-    "BastionSSH": { "Value": {"Ref": "BastionSSH"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "BastionSSH" ] ] }} },
     "AMIID": { "Value": {"Ref": "AMIID"} }
   },
 
   "Resources": {
-
-    "BastionSSH": {
-      "Type"      : "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "VpcId"           : { "Fn::ImportValue": { "Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "MyVpcId" ]]} },
-        "GroupDescription": "SSH from external",
-        "Tags"            : [ 
-				{"Key": "Name", "Value": "SSH Inbound"},
-				{"Key": "Type", "Value": "Instance"}
-			    ],
-        "SecurityGroupIngress": [ 
-          { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": { "Ref": "SSHLocation" } }
-        ]
-      }
-    },
 
     "bastionEip": {
       "Type": "AWS::EC2::EIP",
@@ -69,7 +44,7 @@
         "ImageId"           : { "Ref": "AMIID" },
         "InstanceType"      : "t2.nano",
         "KeyName"           : { "Ref": "KeyName" },
-        "SecurityGroups"    : [ { "Ref": "BastionSSH" } ],
+        "SecurityGroups"    : [ { "Fn::ImportValue": {"Fn::Join": [ ":", [ {"Ref": "VpcStack"}, "BastionSSH" ]]} } ],
         "UserData"          : { "Fn::Base64": {"Fn::Join": ["", [
           "#!/bin/bash\n",
           "yum -y update && yum -y install awscli awslogs aws-cfn-bootstrap\n",

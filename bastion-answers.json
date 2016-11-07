@@ -2,7 +2,6 @@
   "Parameters": {
     "VpcStack"     : "VPC",
     "KeyName"      : "MyTestKey",
-    "SSHLocation"  : "192.168.1.0/24",
     "AMIID"        : "ami-5ec1673e"
   }
 }
