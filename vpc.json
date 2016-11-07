@@ -84,7 +84,7 @@
     "SubnetDb1"            : { "Value": {"Ref": "SubnetDb1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb1" ] ] }} },
     "SubnetDb2"            : { "Value": {"Ref": "SubnetDb2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb2" ] ] }} },
     "NatGatewayId"         : { "Value": {"Ref": "NatGatewayId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "NatGatewayId" ] ] }} },
-    "EC2BasicFunctionsRole": { "Value": {"Ref": "EC2BasicFunctionsRole"}, "Export": {"Name": "EC2BasicFunctionsRole"} }
+    "EC2BasicFunctionsRole": { "Value": {"Fn::GetAtt": [ "EC2BasicFunctionsRole", "Arn" ]}, "Export": {"Name": "EC2BasicFunctionsRole"} }
   },
 
   "Resources": {
