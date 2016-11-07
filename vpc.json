@@ -2,6 +2,21 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "A basic three-tier, multi-az VPC with NAT service for the private subnets",
 
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": { "default": "General Info" },
+          "Parameters": [ "VpcName", "Environment", "MyAz1", "MyAz2" ]
+        },
+        {
+          "Label": { "default": "Subnetting" },
+          "Parameters": [ "MyCidr", "CidrSubPub1", "CidrSubPub2", "CidrSubPriv1", "CidrSubPriv2", "CidrSubDb1", "CidrSubDb2" ]
+        }
+      ]
+    }
+  },
+
   "Parameters": {
     "VpcName": {
       "Description": "VPC Name",
