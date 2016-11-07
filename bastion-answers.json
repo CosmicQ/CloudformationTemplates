@@ -3,6 +3,6 @@
     "VpcStackName" : "VPC",
     "KeyName"      : "MyTestKey",
     "SSHLocation"  : "192.168.1.0/24",
-    "AMIID"        : "ami-a4827dc9"
+    "AMIID"        : "ami-6869aa05"
   }
 }
