@@ -141,8 +141,8 @@
         "MaxSize"                 : "2",
         "DesiredCapacity"         : "1",
         "VPCZoneIdentifier"       : [
-                                     {"FN::ImportValue": {"Fn::Join": [ ":", [ {"Ref": "VpcStack"}, "SubnetPub1" ]]}},
-                                     {"FN::ImportValue": {"Fn::Join": [ ":", [ {"Ref": "VpcStack"}, "SubnetPub2" ]]}}
+                                     {"Fn::ImportValue": {"Fn::Join": [ ":", [ {"Ref": "VpcStack"}, "SubnetPub1" ]]}},
+                                     {"Fn::ImportValue": {"Fn::Join": [ ":", [ {"Ref": "VpcStack"}, "SubnetPub2" ]]}}
                                     ],
         "Tags": [
           { "Key": "env", "Value": { "Ref": "Environment" }, "PropagateAtLaunch": "true" },
