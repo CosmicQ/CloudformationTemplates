@@ -65,7 +65,7 @@
       "Type"       : "AWS::AutoScaling::LaunchConfiguration",
       "Properties" : {
         "EbsOptimized"      : false,
-        "IamInstanceProfile": { "Fn::GetAtt": [ {"Fn::ImportValue": "EC2BasicFunctionsRole"}, "Arn"] },
+        "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsRole"}, 
         "ImageId"           : { "Ref": "AMIID" },
         "InstanceType"      : "t2.nano",
         "KeyName"           : { "Ref": "KeyName" },
