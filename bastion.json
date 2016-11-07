@@ -61,19 +61,11 @@
       }
     },
 
-    "instanceProfile" : {
-      "Type" : "AWS::IAM::InstanceProfile",
-      "Properties" : {
-        "Path"  : "/",
-        "Roles" : {"Fn::ImportValue": "EC2BasicFunctionsRole"}
-      }
-    },
-
     "bastionLaunchConfig": {
       "Type"       : "AWS::AutoScaling::LaunchConfiguration",
       "Properties" : {
         "EbsOptimized"      : false,
-        "IamInstanceProfile": { "Ref": "instanceProfile" },
+        "IamInstanceProfile": { "Fn::GetAtt": [ {"Fn::ImportValue": "EC2BasicFunctionsRole"}, "Arn"] },
         "ImageId"           : { "Ref": "AMIID" },
         "InstanceType"      : "t2.nano",
         "KeyName"           : { "Ref": "KeyName" },
