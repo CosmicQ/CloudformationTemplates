@@ -76,15 +76,15 @@
   },
 
   "Outputs" : {
-    "MyVpcId"              : { "Value": {"Ref": "MyVpcId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcId" ] ] }} },
-    "SubnetPub1"           : { "Value": {"Ref": "SubnetPub1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub1" ] ] }} },
-    "SubnetPub2"           : { "Value": {"Ref": "SubnetPub2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub2" ] ] }} },
-    "SubnetPriv1"          : { "Value": {"Ref": "SubnetPriv1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv1" ] ] }} },
-    "SubnetPriv2"          : { "Value": {"Ref": "SubnetPriv2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv2" ] ] }} },
-    "SubnetDb1"            : { "Value": {"Ref": "SubnetDb1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb1" ] ] }} },
-    "SubnetDb2"            : { "Value": {"Ref": "SubnetDb2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb2" ] ] }} },
-    "NatGatewayId"         : { "Value": {"Ref": "NatGatewayId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "NatGatewayId" ] ] }} },
-    "EC2BasicFunctionsRole": { "Value": {"Fn::GetAtt": [ "EC2BasicFunctionsRole", "Arn" ]}, "Export": {"Name": "EC2BasicFunctionsRole"} }
+    "MyVpcId"                 : { "Value": {"Ref": "MyVpcId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcId" ] ] }} },
+    "SubnetPub1"              : { "Value": {"Ref": "SubnetPub1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub1" ] ] }} },
+    "SubnetPub2"              : { "Value": {"Ref": "SubnetPub2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub2" ] ] }} },
+    "SubnetPriv1"             : { "Value": {"Ref": "SubnetPriv1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv1" ] ] }} },
+    "SubnetPriv2"             : { "Value": {"Ref": "SubnetPriv2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv2" ] ] }} },
+    "SubnetDb1"               : { "Value": {"Ref": "SubnetDb1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb1" ] ] }} },
+    "SubnetDb2"               : { "Value": {"Ref": "SubnetDb2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb2" ] ] }} },
+    "NatGatewayId"            : { "Value": {"Ref": "NatGatewayId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "NatGatewayId" ] ] }} },
+    "EC2BasicFunctionsProfile": { "Value": {"Fn::GetAtt": [ "EC2BasicFunctionsProfile", "Arn" ]}, "Export": {"Name": "EC2BasicFunctionsProfile"} }
   },
 
   "Resources": {
@@ -361,7 +361,7 @@
          }} ]
       }
     },
-    {
+    "EC2BasicFunctionsProfile":{
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Path": "/",
