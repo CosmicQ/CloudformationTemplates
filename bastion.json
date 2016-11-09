@@ -8,7 +8,7 @@
       "Default"              : "dev",
       "AllowedValues"        : [ "dev", "int", "prd" ]
     },
-    "KeyName": {
+    "Ec2KeyName": {
       "Description"          : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
       "Type"                 : "AWS::EC2::KeyPair::KeyName",
       "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
@@ -43,7 +43,7 @@
         "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsProfile"}, 
         "ImageId"           : { "Ref": "AMIID" },
         "InstanceType"      : "t2.nano",
-        "KeyName"           : { "Ref": "KeyName" },
+        "KeyName"           : { "Ref": "Ec2KeyName" },
         "SecurityGroups"    : [ { "Fn::ImportValue": {"Fn::Join": [ ":", [ {"Ref": "VpcStack"}, "BastionSSH" ]]} } ],
         "UserData"          : { "Fn::Base64": {"Fn::Join": ["", [
           "#!/bin/bash\n",

@@ -12,7 +12,7 @@
         },
         {
           "Label": { "default": "Instance Settings" },
-          "Parameters": [ "EC2InstanceType", "EC2KeyName", "AMIID" ]
+          "Parameters": [ "EC2InstanceType", "Ec2KeyName", "AMIID" ]
         },
         {
           "Label": { "default": "Misc" },
@@ -34,7 +34,7 @@
       "Default": "VPC",
       "Type": "String"
     },
-    "EC2KeyName": {
+    "Ec2KeyName": {
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the ECS instances"
     },
@@ -185,7 +185,7 @@
         "ImageId": { "Ref": "AMIID" },
         "InstanceType": { "Ref": "EC2InstanceType" },
         "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsProfile" },
-        "KeyName": { "Ref": "EC2KeyName" },
+        "KeyName": { "Ref": "Ec2KeyName" },
         "SecurityGroups": [ { "Ref": "SgServer" } ],
         "UserData": { "Fn::Base64": { "Fn::Join": [ "", [
           "#!/bin/bash\n",

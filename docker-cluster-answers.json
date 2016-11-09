@@ -1,7 +1,7 @@
 {
   "Parameters": {
     "VpcStack"       : "VPC",
-    "KeyName"        : "MyTestKey",
+    "Ec2KeyName"        : "MyTestKey",
     "AMIID"          : "ami-7dc6601d",
     "BastionAccess"  : "Yes",
     "EC2InstanceType": "t2.small",
