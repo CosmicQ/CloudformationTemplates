@@ -1,0 +1,242 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "General Docker Cluster and Application Load Balancer using exported outputs from the VPC stack.  Bastion access is optional",
+
+
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": { "default": "Cluster Info" },
+          "Parameters": [ "ClusterName", "DesiredCapacity", "MinCapacity", "MaxCapacity" ]
+        },
+        {
+          "Label": { "default": "Instance Settings" },
+          "Parameters": [ "EC2InstanceType", "EC2KeyName", "AMIID" ]
+        },
+        {
+          "Label": { "default": "Misc" },
+          "Parameters": [ "VpcStack", "Environment", "AddBastionAccess" ]
+        }
+      ]
+    }
+  },
+
+
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "Default": "dev",
+      "AllowedValues": [ "dev", "int", "prd"  ]
+    },
+    "VpcStack": {
+      "Description": "VPC Stack Name",
+      "Default": "VPC",
+      "Type": "String"
+    },
+    "EC2KeyName": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the ECS instances"
+    },
+    "AMIID": {
+      "Type": "String",
+      "Default": "ami-7dc6601d",
+      "Description": "AMI ID to use for the ECS hosts"
+    },
+    "BastionAccess": {
+      "Type": "String",
+      "Default": "Yes",
+      "AllowedValues": [ "Yes", "No" ]
+    },
+    "EC2InstanceType": {
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": [ "t2.micro", "t2.small", "t2.medium", "t2.large", "m3.large", "m4.large", "m4.xlarge" ],
+      "ConstraintDescription": "must be a valid EC2 instance type."
+    },
+    "ClusterName": {
+      "Type": "String",
+      "Default": "Docker",
+      "Description": "Name of the cluster"
+    },
+    "DesiredCapacity": {
+      "Type": "Number",
+      "Default": "0",
+      "Description": "Number of instances to launch in your ECS cluster"
+    },
+    "MinCapacity": {
+      "Type": "Number",
+      "Default": "0",
+      "Description": "Max number of instances to launch in your ECS cluster"
+    },
+    "MaxCapacity": {
+      "Type": "Number",
+      "Default": "10",
+      "Description": "Max number of instances to launch in your ECS cluster"
+    }
+  },
+
+
+  "Outputs": {
+    "DockerLoadBalancer": { "Value": { "Ref": "DockerLoadBalancer" }, "Export": { "Name": {"Fn::Join": [ "", [ { "Ref": "AWS::StackName" }, "DockerLoadBalancer" ]] }} }
+  },
+
+
+  "Conditions": {
+    "AddBastionAccess": {"Fn::Equals": [{ "Ref": "BastionAccess" }, "Yes" ]}
+  },
+
+
+  "Resources": {
+    "ECSCluster": {
+      "Type": "AWS::ECS::Cluster"
+    },
+
+    "SgLoadBalancer": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": { "Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "MyVpcId" ]] }},
+        "GroupDescription": "The source security group for all traffic entering the cluster",
+        "Tags": [
+          { "Key": "Name", "Value": {"Fn::Join": [ "", [ { "Ref": "ClusterName" }, "ClusterLoadBalancer" ]] }},
+          { "Key": "env", "Value": { "Ref": "Environment" } }
+        ]
+      }
+    },
+
+    "SgServer": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": { "Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "MyVpcId" ]] }},
+        "GroupDescription": "General Security Group for Docker Cluster",
+        "Tags": [
+          { "Key": "Name", "Value": {"Fn::Join": [ "", [ { "Ref": "ClusterName" }, "ClusterServer" ]] }},
+          { "Key": "env", "Value": { "Ref": "Environment" } }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "SourceSecurityGroupId": { "Ref": "SgLoadBalancer" }
+          }
+        ]
+      }
+    },
+
+    "SgServerBastion": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "AddBastionAccess",
+      "Properties": {
+        "GroupId": { "Ref": "SgServer" },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22",
+        "SourceSecurityGroupId": { "Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "BastionSSH" ]] }}
+      }
+    },
+
+    "DockerLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties": {
+        "Name": "dockerServicesic",
+        "Scheme" : "internet-facing",
+        "Subnets" : [
+                      {"Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "SubnetPub1" ]] }},
+                      {"Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "SubnetPub2" ]] }}
+                    ],
+        "Tags" : [
+          { "Key": "Name", "Value": {"Fn::Join": [ "", [ { "Ref": "ClusterName" }, "ClusterALB" ]] }},
+          { "Key" : "env", "Value" : { "Ref": "Environment" } }
+        ]
+      }
+    },
+
+    "AutoScalingGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "LaunchConfigurationName": { "Ref": "ECSHost" },
+        "MinSize": { "Ref": "MinCapacity" },
+        "MaxSize": { "Ref": "MaxCapacity" },
+        "DesiredCapacity": { "Ref": "DesiredCapacity" },
+        "VPCZoneIdentifier": [
+                      {"Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "SubnetPriv1" ]] }},
+                      {"Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "SubnetPriv2" ]] }}
+                    ],
+        "Tags": [
+          { "Key": "env", "Value": { "Ref": "Environment" }, "PropagateAtLaunch": "true" },
+          { "Key": "Name", "Value": "dockerClusterECS", "PropagateAtLaunch": "true" },
+          { "Key": "role", "Value": "dockerClusterServer", "PropagateAtLaunch": "true" }
+        ]
+      },
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MinInstancesInService": "1",
+          "MaxBatchSize": "1",
+          "PauseTime": "PT5M",
+          "WaitOnResourceSignals": "false"
+        }
+      }
+    },
+
+    "ECSHost": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId": { "Ref": "AMIID" },
+        "InstanceType": { "Ref": "EC2InstanceType" },
+        "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsProfile" },
+        "KeyName": { "Ref": "EC2KeyName" },
+        "SecurityGroups": [ { "Ref": "SgServer" } ],
+        "UserData": { "Fn::Base64": { "Fn::Join": [ "", [
+          "#!/bin/bash\n",
+          "yum -y update && yum -y install awscli awslogs aws-cfn-bootstrap\n",
+          "\n",
+          "cat <<'EOF'>> /etc/awslogs/awslogs.conf\n",
+          "[/var/log/secure]\n",
+          "datetime_format = %b %d %H:%M:%S\n",
+          "file = /var/log/secure\n",
+          "buffer_duration = 5000\n",
+          "log_stream_name = {instance_id}\n",
+          "initial_position = start_of_file\n",
+          "log_group_name = /var/log/secure\n",
+          "[/var/log/audit/audit.log]\n",
+          "datetime_format = %b %d %H:%M:%S\n",
+          "file = /var/log/audit/audit.log\n",
+          "buffer_duration = 5000\n",
+          "log_stream_name = {instance_id}\n",
+          "initial_position = start_of_file\n",
+          "log_group_name = /var/log/audit/audit.log\n",
+          "EOF\n",
+          "\n",
+          "chkconfig --add awslogs\n",
+          "chkconfig awslogs on\n",
+          "service awslogs restart\n",
+          "\n",
+          "yum -y install perl-Switch perl-DateTime perl-Sys-Syslog perl-LWP-Protocol-https\n",
+          "curl http://aws-cloudwatch.s3.amazonaws.com/downloads/CloudWatchMonitoringScripts-1.2.1.zip -o /usr/local/bin/cloud.zip -O\n",
+          "unzip /usr/local/bin/cloud.zip\n",
+          "rm -f /usr/local/bin/cloud.zip\n",
+          "\n",
+          "cat <<'EOF'>> /var/spool/cron/root\n",
+          "*/5 * * * * /usr/local/bin/aws-scripts-mon/mon-put-instance-data.pl --disk-space-used --disk-space-avail --mem-used --mem-avail --swap-used --disk-path=/\n",
+          "\n",
+          "0 23 * * * yum -y update --security --exclude=kernel* > /dev/null 2>&1\n",
+          "EOF\n",
+          "\n",
+          "# Make sure the agent is running before completing\n",
+          "RESULT=1\n",
+          "until [ $RESULT == 0 ]; do\n",
+          "        curl http://localhost:51600\n",
+          "        RESULT=$?\n",
+          "done\n",
+          "\n",
+          "/opt/aws/bin/cfn-signal -e $? ",
+          "         --stack ", { "Ref": "AWS::StackName" },
+          "         --resource AutoScalingGroup ",
+          "         --region ", { "Ref": "AWS::Region" }, 
+          "\n"
+        ]] }}
+      }
+    }
+  }
+}

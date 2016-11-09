@@ -1,0 +1,13 @@
+{
+  "Parameters": {
+    "VpcStack"       : "VPC",
+    "KeyName"        : "MyTestKey",
+    "AMIID"          : "ami-7dc6601d",
+    "BastionAccess"  : "Yes",
+    "EC2InstanceType": "t2.small",
+    "ClusterName"    : "DockerTest",
+    "DesiredCapacity": "0",
+    "MinCapacity"    : "0",
+    "MaxCapacity"    : "10"
+  }
+}
