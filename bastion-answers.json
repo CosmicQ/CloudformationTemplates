@@ -1,6 +1,6 @@
 {
   "Parameters": {
     "VpcStack"     : "VPC",
-    "Ec2KeyName"   : "MyTestKey",
+    "Ec2KeyName"   : "MyTestKey"
   }
 }
