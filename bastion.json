@@ -20,7 +20,7 @@
   },
 
   "Outputs": {
-    "AMIID"             : { "Value": { "Fn::ImportValue": "DefaultAMI" }
+    "AMIID"             : { "Value": { "Fn::ImportValue": "DefaultAMI" }}
   },
 
   "Resources": {

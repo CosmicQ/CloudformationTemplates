@@ -74,7 +74,7 @@
 
   "Outputs": {
     "DockerLoadBalancer": { "Value": { "Ref": "DockerLoadBalancer" }, "Export": { "Name": {"Fn::Join": [ "", [ { "Ref": "AWS::StackName" }, "DockerLoadBalancer" ]] }} },
-    "AMIID"             : { "Value": { "Fn::ImportValue": "DefaultECSAMI" }
+    "AMIID"             : { "Value": { "Fn::ImportValue": "DefaultECSAMI" }}
   },
 
 
