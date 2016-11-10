@@ -95,7 +95,9 @@
     "SubnetDb2"               : { "Value": {"Ref": "SubnetDb2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetDb2" ] ] }} },
     "NatGatewayId"            : { "Value": {"Ref": "NatGatewayId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "NatGatewayId" ] ] }} },
     "EC2BasicFunctionsProfile": { "Value": {"Fn::GetAtt": [ "EC2BasicFunctionsProfile", "Arn" ]}, "Export": {"Name": "EC2BasicFunctionsProfile"} },
-    "BastionSSH"              : { "Value": {"Ref": "BastionSSH"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "BastionSSH" ] ] }} }
+    "BastionSSH"              : { "Value": {"Ref": "BastionSSH"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "BastionSSH" ] ] }} },
+    "DefaultAMI"              : { "Value": "ami-5ec1673e", "Export": {"Name": "DefaultAMI" } },
+    "DefaultECSAMI"           : { "Value": "ami-7dc6601d", "Export": {"Name": "DefaultECSAMI" } }
   },
 
   "Resources": {

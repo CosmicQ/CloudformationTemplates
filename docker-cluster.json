@@ -12,7 +12,7 @@
         },
         {
           "Label": { "default": "Instance Settings" },
-          "Parameters": [ "EC2InstanceType", "Ec2KeyName", "AMIID" ]
+          "Parameters": [ "EC2InstanceType", "Ec2KeyName" ]
         },
         {
           "Label": { "default": "Misc" },
@@ -37,11 +37,6 @@
     "Ec2KeyName": {
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the ECS instances"
-    },
-    "AMIID": {
-      "Type": "String",
-      "Default": "ami-7dc6601d",
-      "Description": "AMI ID to use for the ECS hosts"
     },
     "BastionAccess": {
       "Type": "String",
@@ -78,7 +73,8 @@
 
 
   "Outputs": {
-    "DockerLoadBalancer": { "Value": { "Ref": "DockerLoadBalancer" }, "Export": { "Name": {"Fn::Join": [ "", [ { "Ref": "AWS::StackName" }, "DockerLoadBalancer" ]] }} }
+    "DockerLoadBalancer": { "Value": { "Ref": "DockerLoadBalancer" }, "Export": { "Name": {"Fn::Join": [ "", [ { "Ref": "AWS::StackName" }, "DockerLoadBalancer" ]] }} },
+    "AMIID"             : { "Value": { "Fn::ImportValue": "DefaultECSAMI" }
   },
 
 
@@ -182,7 +178,7 @@
     "ECSHost": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
-        "ImageId": { "Ref": "AMIID" },
+        "ImageId": { "Fn::ImportValue": "DefaultECSAMI" },
         "InstanceType": { "Ref": "EC2InstanceType" },
         "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsProfile" },
         "KeyName": { "Ref": "Ec2KeyName" },

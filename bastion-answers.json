@@ -2,6 +2,5 @@
   "Parameters": {
     "VpcStack"     : "VPC",
     "Ec2KeyName"   : "MyTestKey",
-    "AMIID"        : "ami-5ec1673e"
   }
 }

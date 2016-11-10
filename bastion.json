@@ -16,15 +16,11 @@
     "VpcStack": {
       "Description"          : "VPC Stack Name",
       "Type"                 : "String"
-    },
-    "AMIID": {
-      "Description"          : "AMI ID to use for the instance",
-      "Type"                 : "String"
     }
   },
 
   "Outputs": {
-    "AMIID": { "Value": {"Ref": "AMIID"} }
+    "AMIID"             : { "Value": { "Fn::ImportValue": "DefaultAMI" }
   },
 
   "Resources": {
@@ -40,8 +36,8 @@
       "Type"       : "AWS::AutoScaling::LaunchConfiguration",
       "Properties" : {
         "EbsOptimized"      : false,
-        "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsProfile"}, 
-        "ImageId"           : { "Ref": "AMIID" },
+        "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsProfile" }, 
+        "ImageId"           : { "Fn::ImportValue": "DefaultAMI" },
         "InstanceType"      : "t2.nano",
         "KeyName"           : { "Ref": "Ec2KeyName" },
         "SecurityGroups"    : [ { "Fn::ImportValue": {"Fn::Join": [ ":", [ {"Ref": "VpcStack"}, "BastionSSH" ]]} } ],
