@@ -73,7 +73,7 @@
       "Type"       : "String",
       "Default"    : "10.1.5.0/24"
     },
-    "SSHLocation" : {
+    "SSHLocation": {
       "Description"          : "The IP address range that can SSH to the EC2 instance.",
       "Type"                 : "String",
       "MinLength"            : "9",
@@ -81,8 +81,15 @@
       "Default"              : "192.168.1.0/24",
       "AllowedPattern"       : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
       "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+    "DefaultAMI": {
+      "Description": "AMI ID for regular instances",
+      "Type"       : "String"
+    },
+    "DefaultECSAMI": {
+      "Description": "AMI ID for ECS instances",
+      "Type"       : "String"
     }
-
   },
 
   "Outputs" : {
@@ -96,8 +103,8 @@
     "NatGatewayId"            : { "Value": {"Ref": "NatGatewayId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "NatGatewayId" ] ] }} },
     "EC2BasicFunctionsProfile": { "Value": {"Fn::GetAtt": [ "EC2BasicFunctionsProfile", "Arn" ]}, "Export": {"Name": "EC2BasicFunctionsProfile"} },
     "BastionSSH"              : { "Value": {"Ref": "BastionSSH"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "BastionSSH" ] ] }} },
-    "DefaultAMI"              : { "Value": "ami-5ec1673e", "Export": {"Name": "DefaultAMI" } },
-    "DefaultECSAMI"           : { "Value": "ami-7dc6601d", "Export": {"Name": "DefaultECSAMI" } }
+    "DefaultAMI"              : { "Value": {"Ref": "DefaultAMI"}, "Export": {"Name": "DefaultAMI" } },
+    "DefaultECSAMI"           : { "Value": {"Ref": "DefaultECSAMI"}, "Export": {"Name": "DefaultECSAMI" } }
   },
 
   "Resources": {
