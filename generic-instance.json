@@ -29,7 +29,7 @@
   },
 
   "Conditions": {
-    "AddBastionAccess": {"Fn::Equals": [{ "Ref": "BastionAccess" }, "Yes" ]}
+    "AddBastionAccess": { "Fn::Equals": [{ "Ref": "BastionAccess" }, "Yes" ]}
   },
 
   "Resources": {
@@ -70,7 +70,7 @@
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "EbsOptimized"      : false,
-        "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsProfile" },
+        "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsRole" },
         "ImageId"           : { "Fn::ImportValue": "DefaultAMI" },
         "InstanceType"      : "t2.nano",
         "KeyName"           : { "Ref": "Ec2KeyName" },
