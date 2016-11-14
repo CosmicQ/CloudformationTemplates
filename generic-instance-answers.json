@@ -1,0 +1,8 @@
+{
+  "Parameters": {
+    "Environment"  : "dev",
+    "VpcStack"     : "VPC",
+    "Ec2KeyName"   : "MyTestKey",
+    "BastionAccess": "Yes"
+  }
+}
