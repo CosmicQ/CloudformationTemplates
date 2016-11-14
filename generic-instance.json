@@ -37,7 +37,7 @@
     "SgServer": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "VpcId": { "Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "MyVpcId" ]] }},
+        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "{$VpcStack}:MyVpcId" }},
         "GroupDescription": "Security Group for Generic Instance",
         "Tags": [
           { "Key": "env", "Value": { "Ref": "Environment" } },
@@ -70,7 +70,7 @@
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "EbsOptimized"      : false,
-        "IamInstanceProfile": "EC2BasicFunctionsProfile", 
+        "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsProfile" },
         "ImageId"           : { "Fn::ImportValue": "DefaultAMI" },
         "InstanceType"      : "t2.nano",
         "KeyName"           : { "Ref": "Ec2KeyName" },
