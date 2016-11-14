@@ -73,7 +73,7 @@
         "ImageId"           : { "Fn::ImportValue": "DefaultAMI" },
         "InstanceType"      : "t2.nano",
         "KeyName"           : { "Ref": "Ec2KeyName" },
-        "SecurityGroups"    : [ { "Ref": "SgServer" } ],
+        "SecurityGroupIds"  : [ { "Ref": "SgServer" } ],
         "SubnetId"          : { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:SubnetPriv1" } },
         "Tags": [
           { "Key": "env", "Value": { "Ref": "Environment" } },
