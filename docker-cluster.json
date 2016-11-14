@@ -123,8 +123,6 @@
             "CidrIp"    : { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:MyVpcCidr" } }
           }
         ]
-
-        ]
       }
     },
 
