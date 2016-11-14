@@ -1,4 +1,4 @@
-# CloudformationTemplates
+# Cloudformation Templates
 
 If you have yet to look at the NIST templates, here is the link:
 http://docs.aws.amazon.com/quickstart/latest/accelerator-nist/templates.html
@@ -33,3 +33,10 @@ General Cloudformation Templates
     - Submits metrics to cloudwatch
     - Creates a host file based on running instances
     - Performs security updates, but not kernel updates
+
+- Generic Instance
+  This is just a generic instance with no autoscaling that launches in a private
+  subnet
+
+- Docker Cluster
+  This is an autoscaling cluster for ECS.
