@@ -36,7 +36,7 @@ General Cloudformation Templates
 
 - Generic Instance
   This is just a generic instance with no autoscaling that launches in a private
-  subnet
+  subnet.
 
 - Docker Cluster
   This is an autoscaling cluster for ECS.
