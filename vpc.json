@@ -11,7 +11,7 @@
         },
         {
           "Label": { "default": "Subnetting" },
-          "Parameters": [ "MyCidr", "CidrSubPub1", "CidrSubPub2", "CidrSubPriv1", "CidrSubPriv2", "CidrSubDb1", "CidrSubDb2" ]
+          "Parameters": [ "MyVpcCidr", "CidrSubPub1", "CidrSubPub2", "CidrSubPriv1", "CidrSubPriv2", "CidrSubDb1", "CidrSubDb2" ]
         }
       ]
     }
@@ -28,7 +28,7 @@
       "Default"    : "dev",
       "AllowedValues": [ "dev", "int", "prd" ]
     },
-    "MyCidr": {
+    "MyVpcCidr": {
       "Description": "CIDR Block for the VPC",
       "Type"       : "String",
       "Default"    : "10.1.0.0/20"
@@ -94,6 +94,7 @@
 
   "Outputs" : {
     "MyVpcId"                 : { "Value": {"Ref": "MyVpcId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcId" ] ] }} },
+    "MyVpcCidr"               : { "Value": {"Ref": "MyVpcCidr"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcCidr" ] ] }} },
     "SubnetPub1"              : { "Value": {"Ref": "SubnetPub1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub1" ] ] }} },
     "SubnetPub2"              : { "Value": {"Ref": "SubnetPub2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub2" ] ] }} },
     "SubnetPriv1"             : { "Value": {"Ref": "SubnetPriv1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv1" ] ] }} },
@@ -111,7 +112,7 @@
     "MyVpcId": {
       "Type"      : "AWS::EC2::VPC",
       "Properties": {
-        "CidrBlock"         : {"Ref": "MyCidr"},
+        "CidrBlock"         : {"Ref": "MyVpcCidr"},
         "InstanceTenancy"   : "default",
         "EnableDnsSupport"  : "true",
         "EnableDnsHostnames": "true",
