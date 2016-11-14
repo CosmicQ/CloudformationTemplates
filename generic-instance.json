@@ -70,7 +70,7 @@
       "Type" : "AWS::EC2::Instance",
       "Properties" : {
         "EbsOptimized"      : false,
-        "IamInstanceProfile": { "Fn::ImportValue": "EC2BasicFunctionsProfile" }, 
+        "IamInstanceProfile": "EC2BasicFunctionsProfile", 
         "ImageId"           : { "Fn::ImportValue": "DefaultAMI" },
         "InstanceType"      : "t2.nano",
         "KeyName"           : { "Ref": "Ec2KeyName" },

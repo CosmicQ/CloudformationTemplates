@@ -115,7 +115,15 @@
             "FromPort": "0",
             "ToPort": "65535",
             "SourceSecurityGroupId": { "Ref": "SgLoadBalancer" }
+          },
+          {
+            "IpProtocol": "icmp",
+            "FromPort"  : "-1",
+            "ToPort"    : "-1",
+            "CidrIp"    : { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:MyVpcCidr" } }
           }
+        ]
+
         ]
       }
     },
@@ -135,7 +143,7 @@
     "DockerLoadBalancer": {
       "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
       "Properties": {
-        "Name": "dockerServicesic",
+        "Name": "DockerServicesLb",
         "Scheme" : "internet-facing",
         "Subnets" : [
                       {"Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "SubnetPub1" ]] }},
