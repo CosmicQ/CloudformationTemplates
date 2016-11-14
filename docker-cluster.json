@@ -73,7 +73,7 @@
 
 
   "Outputs": {
-    "DockerLoadBalancer": { "Value": { "Ref": "DockerLoadBalancer" }, "Export": { "Name": {"Fn::Sub": "{$VpcStack}:DockerLoadBalancer" }} },
+    "DockerLoadBalancer": { "Value": { "Ref": "DockerLoadBalancer" }, "Export": { "Name": {"Fn::Sub": "${VpcStack}:DockerLoadBalancer" }} },
     "AMIID"             : { "Value": { "Fn::ImportValue": "DefaultECSAMI" }}
   },
 
@@ -91,7 +91,7 @@
     "SgLoadBalancer": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "{$VpcStack}:MyVpcId" }},
+        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:MyVpcId" }},
         "GroupDescription": "The source security group for all traffic entering the cluster",
         "Tags": [
           { "Key": "Name", "Value": {"Fn::Sub": "${ClusterName}:ClusterLoadBalancer" }},
@@ -103,10 +103,10 @@
     "SgServer": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "{$VpcStack}:MyVpcId" }},
+        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:MyVpcId" }},
         "GroupDescription": "General Security Group for Docker Cluster",
         "Tags": [
-          { "Key": "Name", "Value": {"Fn::Sub": "{$ClusterName}:ClusterServer" }},
+          { "Key": "Name", "Value": {"Fn::Sub": "${ClusterName}:ClusterServer" }},
           { "Key": "env", "Value": { "Ref": "Environment" } }
         ],
         "SecurityGroupIngress": [
@@ -134,7 +134,7 @@
         "IpProtocol": "tcp",
         "FromPort": "22",
         "ToPort": "22",
-        "SourceSecurityGroupId": { "Fn::ImportValue": {"Fn::Sub": "{$VpcStack}:BastionSSH" }}
+        "SourceSecurityGroupId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:BastionSSH" }}
       }
     },
 
@@ -144,11 +144,11 @@
         "Name": "DockerServicesLb",
         "Scheme" : "internet-facing",
         "Subnets" : [
-                      {"Fn::ImportValue": {"Fn::Sub": "{$VpcStack}:SubnetPub1" }},
-                      {"Fn::ImportValue": {"Fn::Sub": "{$VpcStack}:SubnetPub2" }}
+                      {"Fn::ImportValue": {"Fn::Sub": "${VpcStack}:SubnetPub1" }},
+                      {"Fn::ImportValue": {"Fn::Sub": "${VpcStack}:SubnetPub2" }}
                     ],
         "Tags" : [
-          { "Key": "Name", "Value": {"Fn::Sub": "{$ClusterName}:ClusterALB" }},
+          { "Key": "Name", "Value": {"Fn::Sub": "${ClusterName}:ClusterALB" }},
           { "Key" : "env", "Value" : { "Ref": "Environment" } }
         ]
       }
@@ -162,8 +162,8 @@
         "MaxSize": { "Ref": "MaxCapacity" },
         "DesiredCapacity": { "Ref": "DesiredCapacity" },
         "VPCZoneIdentifier": [
-                      {"Fn::ImportValue": {"Fn::Sub": "{$VpcStack}:SubnetPriv1" }},
-                      {"Fn::ImportValue": {"Fn::Sub": "{$VpcStack}:SubnetPriv2" }}
+                      {"Fn::ImportValue": {"Fn::Sub": "${VpcStack}:SubnetPriv1" }},
+                      {"Fn::ImportValue": {"Fn::Sub": "${VpcStack}:SubnetPriv2" }}
                     ],
         "Tags": [
           { "Key": "env", "Value": { "Ref": "Environment" }, "PropagateAtLaunch": "true" },

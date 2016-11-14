@@ -37,7 +37,7 @@
     "SgServer": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "{$VpcStack}:MyVpcId" }},
+        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:MyVpcId" }},
         "GroupDescription": "Security Group for Generic Instance",
         "Tags": [
           { "Key": "env", "Value": { "Ref": "Environment" } },
