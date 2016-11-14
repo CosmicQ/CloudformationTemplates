@@ -40,7 +40,8 @@
         "VpcId": { "Fn::ImportValue": {"Fn::Join": [ ":", [ { "Ref": "VpcStack" }, "MyVpcId" ]] }},
         "GroupDescription": "Security Group for Generic Instance",
         "Tags": [
-          { "Key": "env", "Value": { "Ref": "Environment" } }
+          { "Key": "env", "Value": { "Ref": "Environment" } },
+          { "Key": "Name", "Value": "Generic Instance SG" }
         ],
         "SecurityGroupIngress": [
           {
