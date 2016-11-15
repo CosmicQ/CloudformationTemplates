@@ -85,7 +85,7 @@
           "yum -y update && yum -y install awscli aws-cfn-bootstrap ruby wget\n",
           "\n",
           "cd /home/ec2-user\n",
-          "wget https://aws-codedeploy-us-east-1.s3.amazonaws.com/latest/install\n",
+          "wget https://aws-codedeploy-", { "Ref": "AWS::Region" }, ".s3.amazonaws.com/latest/install\n",
           "chmod +x ./install\n",
           "sudo ./install auto\n",
           "\n",
