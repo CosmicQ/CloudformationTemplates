@@ -7,6 +7,7 @@ General Cloudformation Templates
 
 - VPC
   This template creates a multi-az VPC with public, private, and database subnets.
+  This template also includes an S3 endpoint as an option.
 
   NOTE: This template will provision the required Elastic IP for the NAT service.
 

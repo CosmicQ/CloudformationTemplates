@@ -2,6 +2,7 @@
   "Parameters": {
     "VpcName"      : "MyTestVPC",
     "Environment"  : "dev",
+    "S3Endpoint"   : "Yes",
     "MyVpcCidr"    : "10.1.0.0/20",
     "MyAz1"        : "us-west-2a",
     "MyAz2"        : "us-west-2b",

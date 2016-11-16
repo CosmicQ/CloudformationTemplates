@@ -7,7 +7,7 @@
       "ParameterGroups": [
         {
           "Label": { "default": "General Info" },
-          "Parameters": [ "VpcName", "Environment", "MyAz1", "MyAz2" ]
+          "Parameters": [ "VpcName", "Environment", "MyAz1", "MyAz2", "S3Endpoint" ]
         },
         {
           "Label": { "default": "Subnetting" },
@@ -42,6 +42,12 @@
       "Description": "Availability Zone 2",
       "Type"       : "AWS::EC2::AvailabilityZone::Name",
       "Default"    : "us-west-2b"
+    },
+    "ConS3Endpoint": {
+      "Description": "Add and S3 endpoint to this VPC?",
+      "Type"       : "String",
+      "Default"    : "Yes",
+      "AllowedValues": [ "Yes", "No" ]
     },
     "CidrSubPub1": {
       "Description": "Public Subnet 1",
@@ -92,7 +98,7 @@
     }
   },
 
-  "Outputs" : {
+  "Outputs": {
     "MyVpcId"                 : { "Value": {"Ref": "MyVpcId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcId" ] ] }} },
     "MyVpcCidr"               : { "Value": {"Ref": "MyVpcCidr"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcCidr" ] ] }} },
     "SubnetPub1"              : { "Value": {"Ref": "SubnetPub1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub1" ] ] }} },
@@ -107,6 +113,10 @@
     "BastionSSH"              : { "Value": {"Ref": "BastionSSH"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "BastionSSH" ] ] }} },
     "DefaultAMI"              : { "Value": {"Ref": "DefaultAMI"}, "Export": {"Name": "DefaultAMI" } },
     "DefaultECSAMI"           : { "Value": {"Ref": "DefaultECSAMI"}, "Export": {"Name": "DefaultECSAMI" } }
+  },
+
+  "Conditions": {
+    "AddS3Endpoint": { "Fn::Equals": [{ "Ref": "ConS3Endpoint" }, "Yes" ]}
   },
 
   "Resources": {
@@ -291,6 +301,16 @@
       "Properties" : {
         "SubnetId"     : { "Ref": "SubnetPriv2" },
         "RouteTableId" : { "Ref": "RtPrivate" }
+      }
+    },
+
+    "MyS3Endpoint" : {
+      "Type" : "AWS::EC2::VPCEndpoint",
+      "Condition": "AddS3Endpoint",
+      "Properties": {
+        "RouteTableIds" : [ {"Ref" : "RtPublic"}, {"Ref" : "RtPriv"} ],
+        "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
+        "VpcId" : {"Ref" : "MyVpcId"}
       }
     },
 
