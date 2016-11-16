@@ -308,7 +308,6 @@
       "Type" : "AWS::EC2::VPCEndpoint",
       "Condition": "AddS3Endpoint",
       "Properties": {
-        "RouteTableIds" : [ { "Ref": "RtPublic" }, { "Ref": "RtPriv" } ],
         "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
         "VpcId" : { "Ref": "MyVpcId" }
       }
