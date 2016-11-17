@@ -1,6 +1,7 @@
 {
   "Parameters": {
     "VpcStack"       : "VPC",
+    "Hostname"       : "dockerhost",
     "Ec2KeyName"     : "MyTestKey",
     "BastionAccess"  : "Yes",
     "EC2InstanceType": "t2.small",

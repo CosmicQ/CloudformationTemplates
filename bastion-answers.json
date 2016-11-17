@@ -1,6 +1,7 @@
 {
   "Parameters": {
     "VpcStack"     : "VPC",
+    "Hostname"     : "bastion",
     "Ec2KeyName"   : "MyTestKey"
   }
 }
