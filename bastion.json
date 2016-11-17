@@ -96,7 +96,7 @@
         "Tags": [
           { "Key": "env", "Value": { "Ref": "Environment" }, "PropagateAtLaunch": "true" },
           { "Key": "role", "Value": "ssh-host", "PropagateAtLaunch": "true" },
-          { "Key": "Name", "Value": "bastion", "PropagateAtLaunch": "true" }
+          { "Key": "Name", "Value": { "Ref": "Hostname" }, "PropagateAtLaunch": "true" }
         ]
       },
       "CreationPolicy": {
