@@ -95,7 +95,7 @@
     "SgLoadBalancer": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:MyVpcId" }},
+        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:AwsVpcId" }},
         "GroupDescription": "The source security group for all traffic entering the cluster",
         "Tags": [
           { "Key": "Name", "Value": {"Fn::Sub": "${ClusterName}:ClusterLoadBalancer" }},
@@ -107,7 +107,7 @@
     "SgServer": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:MyVpcId" }},
+        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:AwsVpcId" }},
         "GroupDescription": "General Security Group for Docker Cluster",
         "Tags": [
           { "Key": "Name", "Value": {"Fn::Sub": "${ClusterName}:ClusterServer" }},
@@ -124,7 +124,7 @@
             "IpProtocol": "icmp",
             "FromPort"  : "-1",
             "ToPort"    : "-1",
-            "CidrIp"    : { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:MyVpcCidr" } }
+            "CidrIp"    : { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:VpcCidr" } }
           }
         ]
       }

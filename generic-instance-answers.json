@@ -3,7 +3,7 @@
     "Environment"  : "dev",
     "Hostname"     : "generic",
     "VpcStack"     : "VPC",
-    "Ec2KeyName"   : "MyTestKey",
+    "Ec2KeyName"   : "TestKey",
     "BastionAccess": "Yes"
   }
 }

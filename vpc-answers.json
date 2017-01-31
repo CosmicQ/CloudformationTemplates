@@ -1,11 +1,11 @@
 {
   "Parameters": {
-    "VpcName"      : "MyTestVPC",
+    "VpcName"      : "TestVPC",
     "Environment"  : "dev",
-    "ConS3Endpoint"   : "Yes",
-    "MyVpcCidr"    : "10.1.0.0/20",
-    "MyAz1"        : "us-west-2a",
-    "MyAz2"        : "us-west-2b",
+    "ConS3Endpoint": "Yes",
+    "VpcCidr"      : "10.1.0.0/20",
+    "Az1"          : "us-west-2a",
+    "Az2"          : "us-west-2b",
     "CidrSubPub1"  : "10.1.1.0/24",
     "CidrSubPub2"  : "10.1.2.0/24",
     "CidrSubPriv1" : "10.1.3.0/24",

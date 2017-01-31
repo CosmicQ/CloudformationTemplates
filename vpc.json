@@ -7,11 +7,11 @@
       "ParameterGroups": [
         {
           "Label": { "default": "General Info" },
-          "Parameters": [ "VpcName", "Environment", "MyAz1", "MyAz2", "S3Endpoint" ]
+          "Parameters": [ "VpcName", "Environment", "Az1", "Az2", "S3Endpoint" ]
         },
         {
           "Label": { "default": "Subnetting" },
-          "Parameters": [ "MyVpcCidr", "CidrSubPub1", "CidrSubPub2", "CidrSubPriv1", "CidrSubPriv2", "CidrSubDb1", "CidrSubDb2" ]
+          "Parameters": [ "VpcCidr", "CidrSubPub1", "CidrSubPub2", "CidrSubPriv1", "CidrSubPriv2", "CidrSubDb1", "CidrSubDb2" ]
         }
       ]
     }
@@ -28,17 +28,17 @@
       "Default"    : "dev",
       "AllowedValues": [ "dev", "int", "prd" ]
     },
-    "MyVpcCidr": {
+    "VpcCidr": {
       "Description": "CIDR Block for the VPC",
       "Type"       : "String",
       "Default"    : "10.1.0.0/20"
     },
-    "MyAz1": {
+    "Az1": {
       "Description": "Availability Zone 1",
       "Type"       : "AWS::EC2::AvailabilityZone::Name",
       "Default"    : "us-west-2a"
     },
-    "MyAz2": {
+    "Az2": {
       "Description": "Availability Zone 2",
       "Type"       : "AWS::EC2::AvailabilityZone::Name",
       "Default"    : "us-west-2b"
@@ -99,8 +99,8 @@
   },
 
   "Outputs": {
-    "MyVpcId"                 : { "Value": {"Ref": "MyVpcId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcId" ] ] }} },
-    "MyVpcCidr"               : { "Value": {"Ref": "MyVpcCidr"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "MyVpcCidr" ] ] }} },
+    "AwsVpcId"                : { "Value": {"Ref": "AwsVpcId"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "AwsVpcId" ] ] }} },
+    "VpcCidr"                 : { "Value": {"Ref": "VpcCidr"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "VpcCidr" ] ] }} },
     "SubnetPub1"              : { "Value": {"Ref": "SubnetPub1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub1" ] ] }} },
     "SubnetPub2"              : { "Value": {"Ref": "SubnetPub2"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPub2" ] ] }} },
     "SubnetPriv1"             : { "Value": {"Ref": "SubnetPriv1"}, "Export": {"Name": {"Fn::Join" : [ ":", [ { "Ref" : "AWS::StackName" }, "SubnetPriv1" ] ] }} },
@@ -120,10 +120,10 @@
   },
 
   "Resources": {
-    "MyVpcId": {
+    "AwsVpcId": {
       "Type"      : "AWS::EC2::VPC",
       "Properties": {
-        "CidrBlock"         : {"Ref": "MyVpcCidr"},
+        "CidrBlock"         : {"Ref": "VpcCidr"},
         "InstanceTenancy"   : "default",
         "EnableDnsSupport"  : "true",
         "EnableDnsHostnames": "true",
@@ -139,7 +139,7 @@
       "Properties": {
         "DomainName"       : { "Fn::Join": [".", [ {"Ref": "AWS::Region"}, "compute.internal"]]},
         "DomainNameServers": [ "AmazonProvidedDNS" ],
-        "Tags"             : [ { "Key": "Name", "Value": "MyDHCP" },
+        "Tags"             : [ { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "DHCP" ]] } },
                                { "Key": "env", "Value": {"Ref": "Environment"} }
                              ]
       }
@@ -148,7 +148,7 @@
       "Type" : "AWS::EC2::VPCDHCPOptionsAssociation",
       "Properties" : {
         "DhcpOptionsId" : {"Ref": "DhcpOptions"},
-        "VpcId" : {"Ref": "MyVpcId"}
+        "VpcId" : {"Ref": "AwsVpcId"}
       }
     },     
 
@@ -156,11 +156,11 @@
     "SubnetPub1": {
       "Type"      : "AWS::EC2::Subnet",
       "Properties": {
-        "VpcId"              : { "Ref": "MyVpcId" },
+        "VpcId"              : { "Ref": "AwsVpcId" },
         "CidrBlock"          : { "Ref": "CidrSubPub1" },
-        "AvailabilityZone"   : { "Ref": "MyAz1" },
+        "AvailabilityZone"   : { "Ref": "Az1" },
         "MapPublicIpOnLaunch": true,
-        "Tags"               : [ { "Key": "Name", "Value": "Public1" },
+        "Tags"               : [ { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "Public1" ]] }},
                                  { "Key": "env", "Value": {"Ref": "Environment"} }
                                ]
       }
@@ -168,11 +168,11 @@
     "SubnetPub2": {
       "Type"      : "AWS::EC2::Subnet",
       "Properties": {
-        "VpcId"              : { "Ref": "MyVpcId" },
+        "VpcId"              : { "Ref": "AwsVpcId" },
         "CidrBlock"          : { "Ref": "CidrSubPub2" },
-        "AvailabilityZone"   : { "Ref": "MyAz2" },
+        "AvailabilityZone"   : { "Ref": "Az2" },
         "MapPublicIpOnLaunch": true,
-        "Tags"               : [ { "Key": "Name", "Value": "Public2" },
+        "Tags"               : [ { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "Public2" ]] }},
                                  { "Key": "env", "Value": {"Ref": "Environment"} }
                                ]
       }
@@ -180,10 +180,10 @@
     "SubnetPriv1": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
-        "VpcId"           : { "Ref": "MyVpcId" },
+        "VpcId"           : { "Ref": "AwsVpcId" },
         "CidrBlock"       : { "Ref": "CidrSubPriv1" },
-        "AvailabilityZone": { "Ref": "MyAz1" },
-        "Tags"            : [ { "Key": "Name", "Value": "Private1" },
+        "AvailabilityZone": { "Ref": "Az1" },
+        "Tags"            : [ { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "Private1" ]] }},
                               { "Key": "env", "Value": {"Ref": "Environment"} }
                             ]
       }
@@ -191,10 +191,10 @@
     "SubnetPriv2": {
       "Type"      : "AWS::EC2::Subnet",
       "Properties": {
-        "VpcId"           : { "Ref": "MyVpcId" },
+        "VpcId"           : { "Ref": "AwsVpcId" },
         "CidrBlock"       : { "Ref": "CidrSubPriv2" },
-        "AvailabilityZone": { "Ref": "MyAz2" },
-        "Tags"            : [ { "Key": "Name", "Value": "Private2" },
+        "AvailabilityZone": { "Ref": "Az2" },
+        "Tags"            : [ { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "Private2" ]] }},
                               { "Key": "env", "Value": {"Ref": "Environment"} }
                             ]
       }
@@ -202,10 +202,10 @@
     "SubnetDb1": {
       "Type"      : "AWS::EC2::Subnet",
       "Properties": {
-        "VpcId"           : { "Ref": "MyVpcId" },
+        "VpcId"           : { "Ref": "AwsVpcId" },
         "CidrBlock"       : { "Ref": "CidrSubDb1" },
-        "AvailabilityZone": { "Ref": "MyAz1" },
-        "Tags"            : [ { "Key": "Name", "Value": "DB1" },
+        "AvailabilityZone": { "Ref": "Az1" },
+        "Tags"            : [ { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "DB1" ]] }},
                               { "Key": "env", "Value": {"Ref": "Environment"} }
                             ]
       }
@@ -213,10 +213,10 @@
     "SubnetDb2": {
       "Type"      : "AWS::EC2::Subnet",
       "Properties": {
-        "VpcId"           : { "Ref": "MyVpcId" },
+        "VpcId"           : { "Ref": "AwsVpcId" },
         "CidrBlock"       : { "Ref": "CidrSubDb2" },
-        "AvailabilityZone": { "Ref": "MyAz2" },
-        "Tags"            : [ { "Key": "Name", "Value": "DB2" },
+        "AvailabilityZone": { "Ref": "Az2" },
+        "Tags"            : [ { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "DB2" ]] }},
                               { "Key": "env", "Value": {"Ref": "Environment"} }
                             ]
       }
@@ -226,7 +226,7 @@
       "Type"      : "AWS::EC2::InternetGateway",
       "Properties": {
         "Tags": [ 
-          { "Key": "Name", "Value": "MyGateway" },
+          { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "Gateway" ]] }},
           { "Key": "env", "Value": {"Ref": "Environment"} }
         ]
       }
@@ -235,7 +235,7 @@
     "AttachGateway": {
       "Type"      : "AWS::EC2::VPCGatewayAttachment",
       "Properties": {
-        "VpcId"            : { "Ref": "MyVpcId" },
+        "VpcId"            : { "Ref": "AwsVpcId" },
         "InternetGatewayId": { "Ref": "InternetGateway" }
       }
     },
@@ -243,8 +243,8 @@
     "RtPublic": {
       "Type"      : "AWS::EC2::RouteTable",
       "Properties": {
-        "VpcId": { "Ref": "MyVpcId" },
-        "Tags" : [ { "Key": "Name", "Value": "RT-Public" },
+        "VpcId": { "Ref": "AwsVpcId" },
+        "Tags" : [ { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "RT-Public" ]] }},
                    { "Key": "env", "Value": {"Ref": "Environment"} }
                  ]
       }
@@ -275,8 +275,8 @@
     "RtPrivate": {
       "Type"      : "AWS::EC2::RouteTable",
       "Properties": {
-        "VpcId": { "Ref": "MyVpcId" },
-        "Tags" : [ { "Key": "Name", "Value": "RT-Private" },
+        "VpcId": { "Ref": "AwsVpcId" },
+        "Tags" : [ { "Key": "Name", "Value": {"Fn::Join" : [ "-", [ { "Ref": "VpcName" }, "RT-Private" ]] }},
                    { "Key": "env", "Value": {"Ref": "Environment"} }
                  ]
       }
@@ -304,13 +304,13 @@
       }
     },
 
-    "MyS3Endpoint" : {
+    "AwsS3Endpoint" : {
       "Type" : "AWS::EC2::VPCEndpoint",
       "Condition": "AddS3Endpoint",
       "Properties": {
         "RouteTableIds" : [ { "Ref": "RtPublic" }, { "Ref": "RtPrivate" } ],
         "ServiceName" : { "Fn::Join": [ "", [ "com.amazonaws.", { "Ref": "AWS::Region" }, ".s3" ] ] },
-        "VpcId" : { "Ref": "MyVpcId" }
+        "VpcId" : { "Ref": "AwsVpcId" }
       }
     },
 
@@ -413,7 +413,7 @@
     "BastionSSH": {
       "Type"      : "AWS::EC2::SecurityGroup",
       "Properties": {
-        "VpcId"           : { "Ref": "MyVpcId" },
+        "VpcId"           : { "Ref": "AwsVpcId" },
         "GroupDescription": "SSH from external",
         "Tags"            : [
                                 {"Key": "Name", "Value": "SSH Inbound"},

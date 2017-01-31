@@ -2,7 +2,7 @@
   "Parameters": {
     "VpcStack"       : "VPC",
     "Hostname"       : "dockerhost",
-    "Ec2KeyName"     : "MyTestKey",
+    "Ec2KeyName"     : "TestKey",
     "BastionAccess"  : "Yes",
     "EC2InstanceType": "t2.small",
     "ClusterName"    : "DockerTest",
