@@ -1,0 +1,286 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Example Application Instance",
+
+  "Parameters": {
+    "Environment": {
+      "Type"                 : "String",
+      "Default"              : "dev",
+      "AllowedValues"        : [ "dev", "int", "prd" ]
+    },
+    "Hostname": {
+      "Type"                 : "String",
+      "Default"              : "appserver"
+    },
+    "DomainName": {
+      "Description"          : "The external domain for the applications",
+      "Type"                 : "String",
+      "Default"              : "cool-stuff.com"
+    },
+    "Ec2KeyName": {
+      "Description"          : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type"                 : "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+    },
+    "VpcStack": {
+      "Description"          : "VPC Stack Name",
+      "Type"                 : "String"
+    },
+    "BastionAccess": {
+      "Type": "String",
+      "Default": "Yes",
+      "AllowedValues": [ "Yes", "No" ]
+    }
+  },
+
+  "Outputs": {
+    "AMIID"             : { "Value": { "Fn::ImportValue": "DefaultAMI" }}
+  },
+
+  "Conditions": {
+    "AddBastionAccess": { "Fn::Equals": [{ "Ref": "BastionAccess" }, "Yes" ]}
+  },
+
+  "Resources": {
+
+    "SgALB": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:AwsVpcId" }},
+        "GroupDescription": "Security Group for ALB",
+        "Tags": [
+          { "Key": "env", "Value": { "Ref": "Environment" } },
+          { "Key": "Name", "Value": "ALB SG" }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort"  : "80",
+            "ToPort"    : "80",
+            "CidrIp"    : "0.0.0.0/0"
+          }
+        ]
+      }
+    },
+
+    "AppLoadBalancer" : {
+      "Type" : "AWS::ElasticLoadBalancingV2::LoadBalancer",
+      "Properties" : {
+        "IpAddressType" : "ipv4",
+        "Name" : "AppLoadBalancer",
+        "Scheme" : "internet-facing",
+        "SecurityGroups" : [ { "Ref": "SgALB" } ],
+        "Subnets" : [
+          { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:SubnetPub1" } },  
+          { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:SubnetPub2" } }
+        ],
+        "Tags": [
+          { "Key": "env", "Value": { "Ref": "Environment" } },
+          { "Key": "Name", "Value": "Generic Instance SG" }
+        ],
+        "Type" : "application"
+      }
+    },
+
+    "SgServer": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:AwsVpcId" }},
+        "GroupDescription": "Security Group for Generic Instance",
+        "Tags": [
+          { "Key": "env", "Value": { "Ref": "Environment" } },
+          { "Key": "Name", "Value": "Generic Instance SG" }
+        ],
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol"            : "icmp",
+            "FromPort"              : "-1",
+            "ToPort"                : "-1",
+            "CidrIp"                : { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:VpcCidr" } }
+          },
+          {
+            "IpProtocol"            : "tcp",
+            "FromPort"              : "80",
+            "ToPort"                : "80",
+            "SourceSecurityGroupId" : { "Ref": "SgALB" }
+          }
+        ]
+      }
+    },
+
+    "LBRuleFoo": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Actions": [{
+          "Type": "forward",
+          "ForwardConfig": {
+            "TargetGroups": [{
+              "TargetGroupArn": { "Ref": "TgAppFoo" },
+              "Weight": 1
+            }]
+          }
+        }],
+        "Conditions": [{
+          "Field": "host-header",
+          "HostHeaderConfig": {
+            "Values": ["foo.*"]
+          }
+        }],
+        "ListenerArn": { "Ref": "AppLBListener" },
+        "Priority": 1
+      }
+    },
+
+    "LBRuleFee": {
+      "Type": "AWS::ElasticLoadBalancingV2::ListenerRule",
+      "Properties": {
+        "Actions": [{
+          "Type": "forward",
+          "ForwardConfig": {
+            "TargetGroups": [{
+              "TargetGroupArn": { "Ref": "TgAppFee" },
+              "Weight": 1
+            }]
+          }
+        }],
+        "Conditions": [{
+          "Field": "host-header",
+          "HostHeaderConfig": {
+            "Values": ["fee.*"]
+          }
+        }],
+        "ListenerArn": { "Ref": "AppLBListener" },
+        "Priority": 2
+      }
+    },
+
+    "AppLBListener": {
+      "Type" : "AWS::ElasticLoadBalancingV2::Listener",
+      "Properties": {
+        "DefaultActions": [{ 
+          "Type": "fixed-response", 
+          "FixedResponseConfig": {
+            "ContentType" : "text/html",
+            "MessageBody" : "Nope",
+            "StatusCode" : "503"
+          }
+        }],
+        "LoadBalancerArn" : { "Ref": "AppLoadBalancer" },
+        "Port" : "80",
+        "Protocol" : "HTTP"
+      }
+    },
+
+    "TgAppFoo": {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+          "HealthCheckEnabled" : true,
+          "HealthCheckIntervalSeconds" : "30",
+          "HealthCheckPort" : "80",
+          "HealthCheckProtocol" : "HTTP",
+          "HealthCheckTimeoutSeconds" : "15",
+          "HealthyThresholdCount" : "3",
+          "Name" : "TgAppFoo",
+          "Port" : "80",
+          "Protocol" : "HTTP",
+          "Tags": [
+            { "Key": "env", "Value": { "Ref": "Environment" } },
+            { "Key": "Name", "Value": "Target Group APP Foo" }
+          ],
+          "Targets" : [ { "Id": { "Ref": "AppInstance"}, "Port": "80" } ],
+          "TargetType" : "instance",
+          "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:AwsVpcId" }}
+        }
+    },
+
+    "TgAppFee": {
+      "Type" : "AWS::ElasticLoadBalancingV2::TargetGroup",
+      "Properties" : {
+          "HealthCheckEnabled" : true,
+          "HealthCheckIntervalSeconds" : "30",
+          "HealthCheckPort" : "87",
+          "HealthCheckProtocol" : "HTTP",
+          "HealthCheckTimeoutSeconds" : "15",
+          "HealthyThresholdCount" : "3",
+          "Name" : "TgAppFee",
+          "Port" : "87",
+          "Protocol" : "HTTP",
+          "Tags": [
+            { "Key": "env", "Value": { "Ref": "Environment" } },
+            { "Key": "Name", "Value": "Target Group APP Fee" }
+          ],
+          "Targets" : [ { "Id": { "Ref": "AppInstance"}, "Port": "80" } ],
+          "TargetType" : "instance",
+          "VpcId": { "Fn::ImportValue": {"Fn::Sub": "${VpcStack}:AwsVpcId" } }
+        }
+    },
+
+    "UpdateDNS": {
+      "Type" : "AWS::Route53::RecordSetGroup",
+      "Properties" : {
+          "Comment" : "Update for Foo and Fee apps",
+          "HostedZoneName" : { "Ref": "DomainName" },
+          "RecordSets" : [
+            {
+              "AliasTarget" : {
+                "DNSName" : { "Fn::GetAtt": [ "AppLoadBalancer", "DNSName" ] },
+                "HostedZoneId" : { "Fn::GetAtt": [ "AppLoadBalancer", "CanonicalHostedZoneID" ] }
+              },
+              "Name" : { "Fn::Join" : [ ".", [ "foo", { "Ref": "DomainName" } ] ] },
+              "Type" : "A"
+            },
+            {
+              "AliasTarget" : {
+                "DNSName" : { "Fn::GetAtt": [ "AppLoadBalancer", "DNSName" ] },
+                "HostedZoneId" : { "Fn::GetAtt": [ "AppLoadBalancer", "CanonicalHostedZoneID" ] }
+              },
+              "Name" : { "Fn::Join" : [ ".", [ "fee", { "Ref": "DomainName" } ] ] },
+              "Type" : "A"
+            }
+          ]
+        }
+    },
+
+    "SgServerBastion": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Condition": "AddBastionAccess",
+      "Properties": {
+        "GroupId"              : { "Ref": "SgServer" },
+        "IpProtocol"           : "tcp",
+        "FromPort"             : "22",
+        "ToPort"               : "22",
+        "SourceSecurityGroupId": { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:BastionSSH" } }
+      }
+    },
+
+    "AppInstance": {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "EbsOptimized"      : false,
+        "ImageId"           : { "Fn::ImportValue": "DefaultAMI" },
+        "InstanceType"      : "t2.micro",
+        "KeyName"           : { "Ref": "Ec2KeyName" },
+        "SecurityGroupIds"  : [ { "Ref": "SgServer" } ],
+        "SubnetId"          : { "Fn::ImportValue": { "Fn::Sub": "${VpcStack}:SubnetPriv1" } },
+        "Tags": [
+          { "Key": "env", "Value": { "Ref": "Environment" } },
+          { "Key": "Name", "Value": { "Ref": "Hostname" } }
+        ],
+        "UserData"          : { "Fn::Base64": {"Fn::Join": ["", [
+          "#!/bin/bash\n",
+          "yum -y update && yum -y install docker\n",
+          "systemctl enable docker\n",
+          "systemctl start docker\n",
+          "docker run --name foo -d --restart=always -p 80:80 nginx\n",
+          "docker run --name fee -d --restart=always -p 87:80 nginx\n",
+          "\n",
+          "/opt/aws/bin/cfn-signal -e $? ",
+          "         --stack ", { "Ref": "AWS::StackName" },
+          "         --resource bastionAutoScalingGroup ",
+          "         --region ", { "Ref": "AWS::Region" }, "\n"
+
+        ]]}}
+      }
+    }
+  }
+}
